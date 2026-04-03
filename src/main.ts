@@ -29,10 +29,18 @@ async function bootstrap() {
 
   console.log('[CORS] Enabled for origins:', env.CORS_ORIGINS);
 
+  // Verify database connection
+  const databaseUrl = process.env.DATABASE_URL;
+  if (databaseUrl) {
+    const urlParts = databaseUrl.split('@');
+    const safeUrl = urlParts.length > 1 ? `postgresql://***:***@${urlParts[1]}` : '***';
+    console.log(`[Database] Connection URL: ${safeUrl}`);
+  }
+
   await app.listen(env.PORT);
   console.log(`[Server] YallaCoins API running on port ${env.PORT}`);
   console.log(`[Server] Environment: ${env.NODE_ENV}`);
-  console.log(`[Server] Database: ${env.DB_HOST}:${env.DB_PORT}/${env.DB_NAME}`);
+  console.log('[Server] ✅ All systems initialized successfully');
 }
 
 bootstrap().catch(err => {

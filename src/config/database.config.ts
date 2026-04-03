@@ -8,32 +8,40 @@ import { PayoutMethod } from '../modules/countries/entities/payout-method.entity
 import { FileUpload } from '../modules/file-upload/entities/file-upload.entity';
 import { AuditLog } from '../modules/audit-log/entities/audit-log.entity';
 
-export const databaseConfig = (): TypeOrmModuleOptions => ({
-  type: 'postgres',
-  host: process.env.DB_HOST!,
-  port: parseInt(process.env.DB_PORT!, 10),
-  username: process.env.DB_USERNAME!,
-  password: process.env.DB_PASSWORD!,
-  database: process.env.DB_NAME!,
-  entities: [
-    User,
-    WithdrawalRequest,
-    RequestSnapshot,
-    AppRate,
-    Country,
-    PayoutMethod,
-    FileUpload,
-    AuditLog,
-  ],
-  synchronize: process.env.NODE_ENV !== 'production',
-  logging: process.env.NODE_ENV === 'development',
-  dropSchema: false,
-  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
-  // Force IPv4 to avoid Railway IPv6 connectivity issues with Supabase
-  extra: {
-    max: 20,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
-  },
-  // Note: Validation happens in main.ts before this is called
-});
+export const databaseConfig = (): TypeOrmModuleOptions => {
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    throw new Error(
+      'FATAL: DATABASE_URL environment variable is not set. ' +
+      'This is required for database connectivity. ' +
+      'Format: postgresql://user:password@host:port/database'
+    );
+  }
+
+  return {
+    type: 'postgres',
+    url: databaseUrl,
+    entities: [
+      User,
+      WithdrawalRequest,
+      RequestSnapshot,
+      AppRate,
+      Country,
+      PayoutMethod,
+      FileUpload,
+      AuditLog,
+    ],
+    synchronize: process.env.NODE_ENV !== 'production',
+    logging: process.env.NODE_ENV === 'development',
+    dropSchema: false,
+    ssl: {
+      rejectUnauthorized: false,
+    },
+    extra: {
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 5000,
+    },
+  };
+};

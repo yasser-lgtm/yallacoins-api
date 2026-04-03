@@ -9,12 +9,7 @@
 
 export interface ValidatedEnv {
   // Database Configuration (REQUIRED)
-  DB_HOST: string;
-  DB_PORT: number;
-  DB_USERNAME: string;
-  DB_PASSWORD: string;
-  DB_NAME: string;
-  DB_SSL: boolean;
+  DATABASE_URL: string;
 
   // Server Configuration
   PORT: number;
@@ -39,41 +34,15 @@ export function validateEnvironment(): ValidatedEnv {
   const errors: string[] = [];
 
   // Database Configuration - REQUIRED
-  const DB_HOST = process.env.DB_HOST;
-  if (!DB_HOST) {
-    errors.push('DB_HOST is required and must not be empty');
+  const DATABASE_URL = process.env.DATABASE_URL;
+  if (!DATABASE_URL) {
+    errors.push('DATABASE_URL is required and must not be empty');
+    errors.push('Format: postgresql://user:password@host:port/database');
   }
 
-  const DB_PORT = process.env.DB_PORT;
-  if (!DB_PORT) {
-    errors.push('DB_PORT is required and must not be empty');
-  }
-  const parsedPort = parseInt(DB_PORT || '', 10);
-  if (isNaN(parsedPort) || parsedPort < 1 || parsedPort > 65535) {
-    errors.push('DB_PORT must be a valid port number (1-65535)');
-  }
-
-  const DB_USERNAME = process.env.DB_USERNAME;
-  if (!DB_USERNAME) {
-    errors.push('DB_USERNAME is required and must not be empty');
-  }
-
-  const DB_PASSWORD = process.env.DB_PASSWORD;
-  if (!DB_PASSWORD) {
-    errors.push('DB_PASSWORD is required and must not be empty');
-  }
-
-  const DB_NAME = process.env.DB_NAME;
-  if (!DB_NAME) {
-    errors.push('DB_NAME is required and must not be empty');
-  }
-
-  const DB_SSL_RAW = process.env.DB_SSL;
-  if (!DB_SSL_RAW) {
-    errors.push('DB_SSL is required (must be "true" or "false")');
-  }
-  if (DB_SSL_RAW && !['true', 'false'].includes(DB_SSL_RAW.toLowerCase())) {
-    errors.push('DB_SSL must be either "true" or "false"');
+  // Validate DATABASE_URL format if present
+  if (DATABASE_URL && !DATABASE_URL.startsWith('postgresql://')) {
+    errors.push('DATABASE_URL must start with "postgresql://"');
   }
 
   // Server Configuration
@@ -115,12 +84,7 @@ export function validateEnvironment(): ValidatedEnv {
       console.error(`  ${index + 1}. ${error}`);
     });
     console.error('\nRequired environment variables:');
-    console.error('  - DB_HOST (string, not localhost)');
-    console.error('  - DB_PORT (number, 1-65535)');
-    console.error('  - DB_USERNAME (string, not empty)');
-    console.error('  - DB_PASSWORD (string, not empty)');
-    console.error('  - DB_NAME (string, not empty)');
-    console.error('  - DB_SSL (string, "true" or "false")');
+    console.error('  - DATABASE_URL (postgresql://user:password@host:port/database)');
     console.error('  - JWT_SECRET (string, min 32 characters)');
     console.error('  - CORS_ORIGINS (comma-separated URLs)');
     console.error('  - NODE_ENV (optional, defaults to "production")');
@@ -133,12 +97,7 @@ export function validateEnvironment(): ValidatedEnv {
   const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE || '5242880', 10); // 5MB default
 
   return {
-    DB_HOST: DB_HOST!,
-    DB_PORT: parsedPort,
-    DB_USERNAME: DB_USERNAME!,
-    DB_PASSWORD: DB_PASSWORD!,
-    DB_NAME: DB_NAME!,
-    DB_SSL: DB_SSL_RAW === 'true',
+    DATABASE_URL: DATABASE_URL!,
     PORT,
     NODE_ENV,
     JWT_SECRET: JWT_SECRET!,
