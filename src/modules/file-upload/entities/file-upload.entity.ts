@@ -31,6 +31,12 @@ export class FileUpload {
   @Column({ nullable: true })
   relatedToRequestId: string;
 
+  @Column({ nullable: true })
+  uploadToken: string;
+
+  @Column({ nullable: true })
+  uploadIpAddress: string;
+
   @CreateDateColumn()
   createdAt: Date;
 }

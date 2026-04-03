@@ -1,22 +1,52 @@
-import { Controller, Post, Get, Delete, Param, UseInterceptors, UploadedFile, UseGuards, Request, Res, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Param, UseInterceptors, UploadedFile, UseGuards, Request, Res, BadRequestException, Headers } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { JwtService } from '@nestjs/jwt';
 import { FileUploadService } from './file-upload.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { extractUploadToken, validateUploadToken } from '../../common/utils/upload-token';
 import type { Response } from 'express';
 
 @Controller('files')
 export class FileUploadController {
-  constructor(private fileUploadService: FileUploadService) {}
+  constructor(
+    private fileUploadService: FileUploadService,
+    private jwtService: JwtService,
+  ) {}
 
   @Post('upload')
-  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(@UploadedFile() file: Express.Multer.File, @Request() req) {
-    if (!req.user?.id) {
-      throw new BadRequestException('User authentication required for file upload');
+  async uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req,
+    @Headers('authorization') authHeader?: string,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No file provided');
     }
-    const requestId = req.query.requestId as string;
-    return this.fileUploadService.uploadFile(file, req.user.id, requestId);
+
+    // Extract and validate upload token
+    const token = extractUploadToken(authHeader);
+    if (!token) {
+      throw new BadRequestException('Upload token is required in Authorization header');
+    }
+
+    const tokenValidation = validateUploadToken(this.jwtService, token);
+    if (!tokenValidation.valid) {
+      throw new BadRequestException(tokenValidation.error || 'Invalid upload token');
+    }
+
+    const requestId = tokenValidation.requestId!;
+    const ipAddress = this.getClientIp(req);
+
+    return this.fileUploadService.uploadFile(file, requestId, ipAddress, token);
+  }
+
+  private getClientIp(req: any): string {
+    return (
+      req.headers['x-forwarded-for']?.split(',')[0].trim() ||
+      req.connection.remoteAddress ||
+      'unknown'
+    );
   }
 
   @Get(':id')

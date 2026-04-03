@@ -24,7 +24,12 @@ export class FileUploadService {
     }
   }
 
-  async uploadFile(file: Express.Multer.File, uploadedBy: string, relatedToRequestId?: string) {
+  async uploadFile(
+    file: Express.Multer.File,
+    requestId: string,
+    ipAddress: string,
+    uploadToken: string,
+  ) {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
@@ -50,8 +55,10 @@ export class FileUploadService {
       size: file.size,
       path: filepath,
       url: `/uploads/${filename}`,
-      uploadedBy,
-      relatedToRequestId,
+      uploadedBy: requestId,
+      relatedToRequestId: requestId,
+      uploadToken,
+      uploadIpAddress: ipAddress,
     });
 
     return this.fileUploadsRepository.save(fileUpload);

@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { JwtService } from '@nestjs/jwt';
 import { WithdrawalRequest, WithdrawalStatus } from './entities/withdrawal-request.entity';
 import { RequestSnapshot } from './entities/request-snapshot.entity';
 import { CreateWithdrawalRequestDto } from './dto/create-withdrawal-request.dto';
@@ -8,6 +9,7 @@ import { RatesService } from '../rates/rates.service';
 import { CountriesService } from '../countries/countries.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { AuditAction } from '../audit-log/entities/audit-log.entity';
+import { generateUploadToken } from '../../common/utils/upload-token';
 
 @Injectable()
 export class WithdrawalRequestsService {
@@ -19,6 +21,7 @@ export class WithdrawalRequestsService {
     private ratesService: RatesService,
     private countriesService: CountriesService,
     private auditLogService: AuditLogService,
+    private jwtService: JwtService,
   ) {}
 
   async createRequest(dto: CreateWithdrawalRequestDto, creatorId: string) {
@@ -95,6 +98,9 @@ export class WithdrawalRequestsService {
 
     const savedRequest = await this.requestsRepository.save(request);
 
+    // Generate upload token for this request (valid for 45 minutes)
+    const uploadToken = generateUploadToken(this.jwtService, savedRequest.id, 45);
+
     // Log audit
     await this.auditLogService.log({
       userId: creatorId,
@@ -105,7 +111,10 @@ export class WithdrawalRequestsService {
       newValue: savedRequest,
     });
 
-    return savedRequest;
+    return {
+      ...savedRequest,
+      uploadToken,
+    };
   }
 
   async getRequestById(id: string) {
