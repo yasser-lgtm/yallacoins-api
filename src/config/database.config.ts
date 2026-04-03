@@ -10,11 +10,11 @@ import { AuditLog } from '../modules/audit-log/entities/audit-log.entity';
 
 export const databaseConfig = (): TypeOrmModuleOptions => ({
   type: 'postgres',
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432') || 5432,
-  username: process.env.DB_USERNAME || 'postgres',
-  password: process.env.DB_PASSWORD || 'postgres',
-  database: process.env.DB_NAME || 'yallacoins_db',
+  host: process.env.DB_HOST!,
+  port: parseInt(process.env.DB_PORT!, 10),
+  username: process.env.DB_USERNAME!,
+  password: process.env.DB_PASSWORD!,
+  database: process.env.DB_NAME!,
   entities: [
     User,
     WithdrawalRequest,
@@ -29,4 +29,5 @@ export const databaseConfig = (): TypeOrmModuleOptions => ({
   logging: process.env.NODE_ENV === 'development',
   dropSchema: false,
   ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+  // Note: Validation happens in main.ts before this is called
 });

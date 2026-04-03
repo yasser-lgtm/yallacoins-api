@@ -10,6 +10,7 @@ import { FileUploadModule } from './modules/file-upload/file-upload.module';
 import { AuditLogModule } from './modules/audit-log/audit-log.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { HealthModule } from './modules/health/health.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ReportsModule } from './modules/reports/reports.module';
       envFilePath: '.env',
     }),
     TypeOrmModule.forRoot(databaseConfig()),
+    HealthModule,
     AuthModule,
     WithdrawalRequestsModule,
     RatesModule,

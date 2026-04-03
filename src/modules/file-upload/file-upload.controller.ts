@@ -9,11 +9,14 @@ export class FileUploadController {
   constructor(private fileUploadService: FileUploadService) {}
 
   @Post('upload')
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(@UploadedFile() file: Express.Multer.File, @Request() req) {
-    const userId = req.user?.id || 'anonymous';
+    if (!req.user?.id) {
+      throw new BadRequestException('User authentication required for file upload');
+    }
     const requestId = req.query.requestId as string;
-    return this.fileUploadService.uploadFile(file, userId, requestId);
+    return this.fileUploadService.uploadFile(file, req.user.id, requestId);
   }
 
   @Get(':id')
