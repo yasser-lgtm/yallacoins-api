@@ -11,6 +11,10 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
 
+  // Request/response logging
+  const { LoggingMiddleware } = await import('./common/middleware/logging.middleware');
+  app.use(LoggingMiddleware);
+
   // Global validation pipe for all requests
   app.useGlobalPipes(new GlobalValidationPipe());
 
