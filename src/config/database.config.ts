@@ -29,5 +29,11 @@ export const databaseConfig = (): TypeOrmModuleOptions => ({
   logging: process.env.NODE_ENV === 'development',
   dropSchema: false,
   ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+  // Force IPv4 to avoid Railway IPv6 connectivity issues with Supabase
+  extra: {
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000,
+  },
   // Note: Validation happens in main.ts before this is called
 });
