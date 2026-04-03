@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { JwtModule } from '@nestjs/jwt';
 import { WithdrawalRequest } from './entities/withdrawal-request.entity';
 import { RequestSnapshot } from './entities/request-snapshot.entity';
 import { WithdrawalRequestsService } from './withdrawal-requests.service';
@@ -12,7 +11,6 @@ import { AuditLogModule } from '../audit-log/audit-log.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([WithdrawalRequest, RequestSnapshot]),
-    JwtModule.register({}),
     RatesModule,
     CountriesModule,
     AuditLogModule,
