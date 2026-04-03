@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { JwtModule } from '@nestjs/jwt';
 import { databaseConfig } from './config/database.config';
+import { SecurityModule } from './modules/security/security.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { WithdrawalRequestsModule } from './modules/withdrawal-requests/withdrawal-requests.module';
 import { RatesModule } from './modules/rates/rates.module';
@@ -19,11 +19,7 @@ import { HealthModule } from './modules/health/health.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '24h' },
-      global: true,
-    }),
+    SecurityModule,
     TypeOrmModule.forRoot(databaseConfig()),
     HealthModule,
     AuthModule,
