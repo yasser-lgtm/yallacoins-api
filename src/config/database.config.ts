@@ -1,5 +1,4 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import * as dns from 'dns';
 import { User } from '../modules/auth/entities/user.entity';
 import { WithdrawalRequest } from '../modules/withdrawal-requests/entities/withdrawal-request.entity';
 import { RequestSnapshot } from '../modules/withdrawal-requests/entities/request-snapshot.entity';
@@ -43,20 +42,8 @@ export const databaseConfig = (): TypeOrmModuleOptions => {
       max: 20,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 5000,
-      // CRITICAL: Custom DNS lookup to force IPv4 at pg driver level
-      // This prevents Railway container from attempting IPv6 connections
-      // which fail with ENETUNREACH error
-      lookup: (hostname: string, options: any, callback: any) => {
-        console.log(`[TypeORM] DNS lookup for: ${hostname} (forcing IPv4)`);
-        dns.lookup(hostname, { family: 4 }, (err, address, family) => {
-          if (err) {
-            console.error(`[TypeORM] DNS lookup failed for ${hostname}: ${err.message}`);
-            return callback(err);
-          }
-          console.log(`[TypeORM] DNS resolved ${hostname} to ${address} (IPv${family})`);
-          callback(null, address, family);
-        });
-      },
+      // DNS interception is now handled by dns-interceptor.ts
+      // which overrides dns.lookup at the module level
     },
   };
 };

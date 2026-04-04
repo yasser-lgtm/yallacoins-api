@@ -1,3 +1,9 @@
+/**
+ * CRITICAL: DNS Interceptor MUST be imported FIRST
+ * This ensures ALL DNS lookups are intercepted before any modules load
+ */
+import './config/dns-interceptor';
+
 import { NestFactory } from '@nestjs/core';
 import * as dns from 'dns';
 import { AppModule } from './app.module';
