@@ -42,7 +42,11 @@ export const databaseConfig = (): TypeOrmModuleOptions => {
       max: 20,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 5000,
-      family: 4, // Force IPv4 to avoid IPv6 ENETUNREACH errors on Railway
+      // Custom DNS lookup to force IPv4 at driver level
+      lookup: (hostname: string, options: any, callback: any) => {
+        const dns = require('dns');
+        dns.lookup(hostname, { family: 4 }, callback);
+      },
     },
   };
 };
